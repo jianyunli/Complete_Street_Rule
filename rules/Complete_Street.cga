@@ -58,6 +58,7 @@
 #1 feet		==.3048  Meters
 #1/2 feet	==.1524  Meters
 #1 inch		==.0254  Meters
+version "2015.2"
 
 
 
@@ -68,32 +69,33 @@
 @Group("DISPLAY OPTIONS",0) @Order(1)@Description("When true, textures are on display, when false textures are removed. If true it deletes an unused UVset (see comments for details).")
 attr Display_Textures = true
 @Group("DISPLAY OPTIONS") @Order(2) @Description("Visually colors the entire street model based on the attributes of a street. Usage thematic looks best when textures are turned off.")
-@Range("Thematics Off", "Solid Color", "Peak Runoff/Permeability","Bike Stress","Pedestrian Stress","Auto Stress","Transit Stress","Usage")
+@Range("Thematics Off", "Solid Color", "Peak Runoff/Permeability","Bike Preference","Pedestrian Preference","Auto Preference","Transit Preference","All Mode Preference","Usage","Transit Highlight","Bicycle Highlight","Auto Highlight","Pedestrian Highlight","Planting Highlight","Flood Scenario")
 attr Display_Thematics = "Thematics Off" 
-@Group("DISPLAY OPTIONS") @Order(3) @Description("When the Solid Color thematic is used for highlighting certain streets, this chooses the color that is utilized by the thematic.")
+@Group("DISPLAY OPTIONS") @Order(3) @Description("When the Solid Color thematic is used for highlighting certain streets or mode classes, this chooses the color that is utilized by the thematic.") #@Hidden
 attr Solid_Color = "#FFFFFF"
-@Group("DISPLAY OPTIONS") @Order(4)@Description("When this attribute is true, any time there is unallocated drainage space that is wider than 1/3 the current lane width (usually 3-4 feet), it will flag them as red. It helps find errant streets.")
-attr Flag_Empty_Space = false
-@Group("DISPLAY OPTIONS") @Range("High","Low") @Order(5)@Description("This attribute controls the level of detail of the selected textures and OBJs. Typically a lower LOD will decrease the polygon count and texture image resolution.")
-attr LOD_Setting	  ="High"
+@Group("DISPLAY OPTIONS") @Order(4) @Description("When a mode emphasis thematic is chosen, the color fo the other streets is chosen by default by this hidden parameter.")@Hidden
+attr Secondary_Solid_Color= Brightness
+@Group("DISPLAY OPTIONS") @Range("Best Fit","Exact","Flag") @Order(5)@Description("Determines whether the lane width will be the best of fit, exact width, or flag unallocated space red when it is 1/3 the current lane width (usually 3-4 feet).")
+attr Space_Management="Best Fit"
+@Group("DISPLAY OPTIONS") @Range("High","Moderate","Low") @Order(6)@Description("This attribute controls the level of detail of the selected textures and OBJs. Typically a lower LOD will decrease the polygon count and texture image resolution.")
+attr LOD_Setting	  ="Moderate"
 texturingOn = Display_Textures 	# Shorthand.
 thematicsOn = Display_Thematics != "Thematics Off"
 coloringOn = !thematicsOn && texturingOn	# Shorthand.
 const peakRunoffDisplayOn = Display_Thematics == "Peak Runoff/Permeability"
-const Low_LOD			  = case LOD_Setting=="Low":"Low" else:""
-const High_LOD			  = case LOD_Setting=="High":"High" else:""
+const Not_Low_LOD		  = case LOD_Setting!="Low": true else: false
+const Not_High_LOD		  = case LOD_Setting!="High": true else: false
+const LOD_Object_Choice   = case Not_Low_LOD:"High" else: "Low"
 
 @Order(1)@Group("ROAD LAYOUT","Basic Components",1) @Range(0,1) @Description("Represents the fraction of the lanes allocated to the *Right Lanes*. If 1 or 0, they become 1 way streets.")
 attr Lane_Distribution 			= _getInitialLaneDistribution
 @Order(2)@Range(2.7,3.9624)@Description("Determines the widths of the main travel lanes. Typically, Freeways are about 12 feet (3.6 m), Arterials 11-12 feet (3.3-3.6 m), Collectors 10-12 feet (3.0-3.6 m), and Local roads 9-12 feet (2.7-3.6 m).")
 attr Lane_Width					= (laneWidth-.2)
-@Order(3)@Range(1,12)@Description("Determines the number of the main travel lanes.")
-attr Lane_Number				= 2
-@Order(4) @Range("yellow","white","none") @Description("Choses color for the centerline if there is a center line. This attribute does nothing to other center types.")
+@Order(3) @Range("yellow","white","none") @Description("Choses color for the centerline if there is a center line. This attribute does nothing to other center types.")
 attr Centerline_Color 			= _getInitialCenterline
-@Order(5) @Range("right-hand","left-hand")@Description("Orients the road for right vs. left traffic. Please note that some aspects of the rule do not *flip* when this is changed such as the median.")
+@Order(4) @Range("right-hand","left-hand")@Description("Orients the road for right vs. left traffic. Please note that some aspects of the rule do not *flip* when this is changed such as the median.")
 attr Traffic_Direction			= "right-hand"
-@Order(6) @Range(0,80) @Description("A descriptive attribute that feeds into reporting. If >= 40 mph, Design Speed is calculated as Speed_Limit +7.5, if less than 40, design speed is assumed equal to the Speed_Limit (see comments for details). 1 MPH==1.6093 KPH.")
+@Order(5) @Range(0,80) @Description("A descriptive attribute that feeds into reporting. If >= 40 mph, Design Speed is calculated as Speed_Limit +7.5, if less than 40, design speed is assumed equal to the Speed_Limit (see comments for details). 1 MPH==1.6093 KPH.")
 attr Speed_Limit_in_MPH			= _InititalSpeedLimit		
 
 @Group("ROAD LAYOUT","Stop Markings",2)
@@ -111,7 +113,7 @@ attr Crosswalk_End 				= _getInitialCrosswalk(connectionEnd)
 attr Begin_Crosswalk_To_Stop_Bar= _getInitialGap(connectionStart)
 @Order(4) @Range(0,10) @Description("Crosswalk to Stop Bar Distance. If the Crosswalk UV is clipping geometry, adjust this to set it back more on angled streets. If used, stop and yield lines should be placed a minimum of  4 ft (1.2 m) from the Crosswalk-MUTCD. NACTO suggests a minimum of 8 ft (2.44 m) in urban areas.")
 attr End_Crosswalk_To_Stop_Bar 	= _getInitialGap(connectionEnd)
-@Order(5) @Range("white","yellow") @Description("Determines the color of painted crosswalks.")
+@Order(5) @Range("white","yellow") @Description("Determines the color of painted crosswalks.")#@Hidden
 attr Crosswalk_Color 			= "white"
 @Order(6) @File("tif","jpg","png","tiff","gif","jpeg","psp","jsl","sgi","tga","bmp","dds")@Description("Creates a 2 m by 2 m tile of the image selected on the crosswalk. Keep in mind that if another painted tile is chosen, the paint area will not appear in reporting. Defer to Crosswalk Area Reports.")
 attr Custom_Crosswalk_Texture	= SidewalkFolder+"/Paver Brick Red Basket Weave.jpg"
@@ -303,7 +305,6 @@ attr Sidewalk_Way_Finder				=false
 @Order(12) @Description("Will create 2 bike racks near a bus stop.")#@Hidden
 attr Sidewalk_Bike_Rack					=false
 
-
 @Group("SIDEWALK LAYOUT","Sidewalk Cover",10)
 @Order(1) @Range("none", "Both", "Right", "Left")@Description("Will create a covered walkway")
 attr Sidewalk_Covered_Walkway					="None"
@@ -323,6 +324,8 @@ attr Sidewalk_Cover_ColumnSpacing = 2
 attr Sidewalk_Cover_Thickness = 0.1
 @Order(9) @Range(0,90)@Description("Specify angle of roof cover")
 attr Sidewalk_Cover_RoofAngle = 0
+
+
 @Group("POPULATION",80) @Range(0,300) @Order(1) 
 @Description("Determines the number of vehicles per KM of road length loaded onto main throughways.")#@Hidden
 attr Vehicles_Per_KM 				= case Not_High_LOD:0 else: 100
@@ -723,8 +726,6 @@ const _neighborEnd			= case _hasStop(connectionEnd):1 else: 0
 const _crosswalkWidth		= case _Maxof(sidewalkWidthLeft,sidewalkWidthRight)==0:3 else:(_Maxof(sidewalkWidthLeft,sidewalkWidthRight)+0.05)//changed to match width of largest sidewalk +0.05 (2 inches), if 0 default is 2. 
 const _crosswalkBeginWidth	= case Crosswalk_Begin =="none": 0 else: (Crosswalk_Width)
 const _crosswalkEndWidth 	= case Crosswalk_End =="none"  : 0 else: (Crosswalk_Width)
-const _crosswalkBeginGap 	= case Crosswalk_End =="none"  : 0 else:  3
-const _crosswalkEndGap	 	= case Crosswalk_End =="none"  : 0 else:  3
 const _centerWidth	 		= case oneWay: 0 
 							  case Center_Type=="Barrier":.98
 							  case Center_Type=="Barrier & Shoulder":Center_Width
@@ -1277,22 +1278,20 @@ const NormalMax = 1
 #	NormalMin + (((dataValueAdj(dataValue,Max_Data_Value,Min_Data_Value) - Min_Data_Value ) 
 #	* ( NormalMax - NormalMin ))
 #	/ ( Max_Data_Value - Min_Data_Value))
-######################################################################################################################################################
-######################################################################################################################################################
-######################################################################################################################################################
+###################################################
+###################################################
 ##
 ##  RULES
 ##
-######################################################################################################################################################
-######################################################################################################################################################
-######################################################################################################################################################
+##
+
+###################################################
 # Street Lane Texturing
 #
 
 @StartRule
 # split away the crosswalks at the beginning (if any) using the special UVSET 1
-
-Street --> 	#DeleteUV if texturing is off
+Street -->	#DeleteUV if texturing is off
 	case _uScale==1: #IF the Street is long enough continue normally. 
 		report("Modal Preference (0 to 1).Bicycle", _BikeRank)
 		report("Modal Preference (0 to 1).Pedestrian", _PedRank)
@@ -2566,23 +2565,22 @@ Curbs_Mass(RotateUV)-->
 Curbs(RotateUV) --> 
   	case RotateUV:#Used to handle an exception where scope changes on horizontal curbs (parallel to crosswalk)
   		rotateUV(0,270) 
-  		setupProjection(0,scope.yx,1,'1)#Notice axis choice changed. 
+  		setupProjection(0,scope.yx,~2,'1)#Notice axis choice changed. 
   		projectUV(0)
-  		deleteUV(_Texture_Switch)	
-  		Curb_Texture
+  		deleteUV(_Texture_Switch)
+  		Curb_Texture	
   	else:		
-  		setupProjection(0,scope.xy,1,'1)
+  		setupProjection(0,scope.xy,~2,'1)
   		projectUV(0)
   		deleteUV(_Texture_Switch)
   		Curb_Texture
-  
-  Curb_Texture -->
+  		
+ Curb_Texture -->
   	case Curb_Paint == "Painted":
   		texture(SidewalkFolder+"/curbs_2m_bw.jpg")
   	else:
   		texture(SidewalkFolder+"/curbs_2m.jpg")
-  	
-  		
+  		 		
 Sidewalk_Setup-->
 	case sidewalkSide=="Right":
 		extrude(world.y, Sidewalk_Height )
@@ -2655,6 +2653,7 @@ Traffic_Light_Setup-->
 	else:
 		NIL
 
+		
 Traffic_Light(index)-->
 	alignScopeToAxes(y)		// place the Lamps vertically
 	s(0,5,0)				// set height to 5 meters
@@ -2701,7 +2700,8 @@ Parking_Meter_Loader(Parking_Length,Dir)-->
 						 |~Parking_Meters_Spacing:NIL}*
 						 |(_Sidewalk_CrossStop_Gap(Dir,"End")):NIL}
 
-	case Location== "Through Zone" :
+Sidewalk_Pavement (Location) -->
+	case Location == "Through Zone":
 		case Sidewalk_Covered_Walkway =="Both":
 		Covered_Walkway_Base
 		else:
@@ -2711,11 +2711,17 @@ Parking_Meter_Loader(Parking_Length,Dir)-->
 		deleteUV(_Texture_Switch)
 		scaleUV(0, Sidewalk_Texture_Scale, Sidewalk_Texture_Scale)
 		rotateUV(0, Sidewalk_Texture_Rotation)
-		report("Sidewalk: "+Location+" Area (m^2)",geometry.area())
-		
+		report("Sidewalk."+Location+" Area (m^2)",geometry.area())
 	case Location=="Corners":
 		alignScopeToAxes(y)
-		
+		tileUV(0,2,2)
+		texture(Sidewalk_Texture)
+		deleteUV(_Texture_Switch)
+		scaleUV(0, Sidewalk_Texture_Scale, Sidewalk_Texture_Scale)
+		rotateUV(0, Sidewalk_Texture_Rotation)
+		report("Sidewalk."+Location+" Area (m^2)",geometry.area())
+	case Location=="Undercover":
+		alignScopeToAxes(y)
 		tileUV(0,2,2)
 		texture(Sidewalk_Texture)
 		deleteUV(_Texture_Switch)
@@ -2729,17 +2735,6 @@ Parking_Meter_Loader(Parking_Length,Dir)-->
 		deleteUV(_Texture_Switch)
 		scaleUV(0, Sidewalk_Texture_Scale, Sidewalk_Texture_Scale)
 		rotateUV(0, Sidewalk_Texture_Rotation)
-		
-	case Location=="Undercover":
-		alignScopeToAxes(y)
-		
-		tileUV(0,2,2)
-		texture(Sidewalk_Texture)
-		deleteUV(_Texture_Switch)
-		scaleUV(0, Sidewalk_Texture_Scale, Sidewalk_Texture_Scale)
-		rotateUV(0, Sidewalk_Texture_Rotation)
-		report("Sidewalk: "+Location+" Area (m^2)",geometry.area())
-		
 	else:
 		alignScopeToAxes(y)
 		tileUV(0,2,2)
@@ -2747,35 +2742,15 @@ Parking_Meter_Loader(Parking_Length,Dir)-->
 		deleteUV(_Texture_Switch)
 		scaleUV(0, Sidewalk_Texture_Scale, Sidewalk_Texture_Scale)
 		rotateUV(0, Sidewalk_Texture_Rotation)
-		
-Sidewalk_WPlant_Loading_Section (Dir)-->
-	split(u,unitSpace,0){(_Sidewalk_CrossStop_Gap(Dir,"Begin")): Sidewalk_Pavement ("Cross Walk Begin Gap")
-		
-		
+
 ####################################################################################################
 //Covered Walkway Rule ----------------------------------------------------------------------
 ####################################################################################################
 
 Covered_Walkway_Base -->
   extrude(world.y, Sidewalk_Cover_ClearHeight)
-	comp(f) {top : Roof_Start | side : NIL | bottom : Pavement("UnderCover")}
+	comp(f) {top : Roof_Start | side : NIL | bottom : Sidewalk_Pavement("UnderCover")}
 	
-/** Column_Start --> split(u, unitSpace, 0) { Sidewalk_Cover_ColumnSize : Column_LengthSection | Sidewalk_Cover_ColumnSpacing : Pavement("UnderCover") }*
-
- Column_LengthSection --> 
-	case Sidewalk_Cover_ColumnPlacement == "Road Side" : 
-	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Pavement("UnderCover") }
-	case Sidewalk_Cover_ColumnPlacement == "Building Side" : 
-	split(v, unitSpace, 0) { ~1 : Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") }
-	else : 
-	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") | 
-	Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Pavement("UnderCover") | 
-	Sidewalk_Cover_ColumnSize : ColumnBase | 
-	Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") }
-
-ColumnBase --> extrude(world.y, Sidewalk_Cover_ClearHeight) 
-	
-*/ 
 Roof_Start --> 
 	case Sidewalk_Cover_Roof == "Angled" : roofShed(Sidewalk_Cover_RoofAngle) comp(f){ top : Roof_Slope | side : NIL }
 	case Sidewalk_Cover_Roof == "Gable" : roofGable(Sidewalk_Cover_RoofAngle) comp(f){ top : Roof_Slope | side : NIL }
@@ -2787,33 +2762,22 @@ comp(f){top : Roof_Material | side : Roof_Material | bottom : Column_Start}
 Column_Start --> setupProjection(0,scope.xy,2, 2)
 		texture(Sidewalk_Texture) projectUV(0) split(u, unitSpace, 0) { Sidewalk_Cover_ColumnSize : Column_LengthSection | Sidewalk_Cover_ColumnSpacing : Roof_Material }*
 Column_LengthSection --> case Sidewalk_Cover_ColumnPlacement == "Road Side" : 
-	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Pavement("UnderCover") }
+	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Sidewalk_Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Sidewalk_Pavement("UnderCover") }
 	case Sidewalk_Cover_ColumnPlacement == "Building Side" : 
-	split(v, unitSpace, 0) { ~1 : Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") }
+	split(v, unitSpace, 0) { ~1 : Sidewalk_Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | Sidewalk_Cover_ColumnOffset : Sidewalk_Pavement("UnderCover") }
 	else : 
-	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") | 
-	Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Pavement("UnderCover") | 
+	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Sidewalk_Pavement("UnderCover") | 
+	Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Sidewalk_Pavement("UnderCover") | 
 	Sidewalk_Cover_ColumnSize : ColumnBase | 
-	Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") }
+	Sidewalk_Cover_ColumnOffset : Sidewalk_Pavement("UnderCover") }
 
 ColumnBase --> extrude(world.y, -Sidewalk_Cover_ClearHeight*2)
 
-/* Column_LengthSection --> 
-	case Sidewalk_Cover_ColumnPlacement == "Road Side" : 
-	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Pavement("UnderCover") }
-	case Sidewalk_Cover_ColumnPlacement == "Building Side" : 
-	split(v, unitSpace, 0) { ~1 : Pavement("UnderCover") | Sidewalk_Cover_ColumnSize : ColumnBase | Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") }
-	else : 
-	split(v, unitSpace, 0) { Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") | 
-	Sidewalk_Cover_ColumnSize : ColumnBase | ~1 : Pavement("UnderCover") | 
-	Sidewalk_Cover_ColumnSize : ColumnBase | 
-	Sidewalk_Cover_ColumnOffset : Pavement("UnderCover") }
-
-ColumnBase --> extrude(world.y, -Sidewalk_Cover_ClearHeight)*/
-
-Roof_Material --> texture(Default_Sidewalk_Cover) 
+Roof_Material --> texture(Sidewalk_Texture) 
 
 
+Sidewalk_WPlant_Loading_Section (Dir)-->
+	split(u,unitSpace,0){(_Sidewalk_CrossStop_Gap(Dir,"Begin")): Sidewalk_Pavement ("Cross Walk Begin Gap")
 						|~_Bus_Sidewalk_Base("Near-side"):Bus_Stop_Base("Sidewalk",0)
 						|~geometry.du(0,unitSpace)/2:Sidewalk_Plant_Side("Begin")
 						|~_Bus_Sidewalk_Base("Mid-Block"):Bus_Stop_Base("Sidewalk",0)
@@ -2824,9 +2788,9 @@ Roof_Material --> texture(Default_Sidewalk_Cover)
 Sidewalk_WOPlant_Loading_Section (Dir)-->
 	split(u,unitSpace,0){(_Sidewalk_CrossStop_Gap(Dir,"Begin")): Sidewalk_Pavement ("Cross Walk Begin Gap")People
 						|~_Bus_Sidewalk_Base("Near-side"):Bus_Stop_Base("Sidewalk",0)
-						|~geometry.du(0,unitSpace)/2: Sidewalk_Pavement ("Through Zone")People
+						|~geometry.du(0,unitSpace)/2: Sidewalk_Pavement ("Edge Zone")People
 						|~_Bus_Sidewalk_Base("Mid-Block"):Bus_Stop_Base("Sidewalk",0)
-						|~geometry.du(0,unitSpace)/2: Sidewalk_Pavement ("Through Zone") People
+						|~geometry.du(0,unitSpace)/2: Sidewalk_Pavement ("Edge Zone") People
 						|~_Bus_Sidewalk_Base("Far-side"):Bus_Stop_Base("Sidewalk",0)
 						|(_Sidewalk_CrossStop_Gap(Dir,"End") ): Sidewalk_Pavement ("Cross Walk End Gap")People}
 
