@@ -2752,10 +2752,9 @@ Sidewalk_Pavement (Location) -->
 //Covered Walkway Rule ----------------------------------------------------------------------
 ####################################################################################################
 
-Covered_Walkway_Base -->
-  extrude(world.y, Sidewalk_Cover_ClearHeight)
-	comp(f) {top : Roof_Start | side : NIL | bottom : Sidewalk_Pavement("UnderCover")}
-	
+Covered_Walkway_Base --> extrude(Sidewalk_Cover_ClearHeight)
+comp(f) {top : Roof_Start | bottom : Sidewalk_Pavement ("Undercover")}
+
 Roof_Start --> 
 	case Sidewalk_Cover_Roof == "Angled" : roofShed(Sidewalk_Cover_RoofAngle) comp(f){ top : Roof_Slope | side : NIL }
 	case Sidewalk_Cover_Roof == "Gable" : roofGable(Sidewalk_Cover_RoofAngle) comp(f){ top : Roof_Slope | side : NIL }
@@ -2779,7 +2778,6 @@ Column_LengthSection --> case Sidewalk_Cover_ColumnPlacement == "Road Side" :
 ColumnBase --> extrude(world.y, -Sidewalk_Cover_ClearHeight*2)
 
 Roof_Material --> texture(Sidewalk_Texture) 
-
 
 Sidewalk_WPlant_Loading_Section (Dir)-->
 	split(u,unitSpace,0){(_Sidewalk_CrossStop_Gap(Dir,"Begin")): Sidewalk_Pavement ("Cross Walk Begin Gap")
@@ -3372,3 +3370,139 @@ PoleTexturing -->
 	#t(0,1,0)
 	#color(0,0,1)
 ##				
+
+
+@Description("One way - ped X cyc~car")
+style Type_1
+attr Space_Management = "Flag"
+attr Lane_Distribution = 0.0
+attr Lane_Width = 3.3
+attr Traffic_Direction = "left-hand"
+attr Speed_Limit_in_MPH = 36.0
+attr Stop_Begin = "none"
+attr Stop_End = "none"
+attr Crosswalk_End = "dashed"
+attr Begin_Crosswalk_To_Stop_Bar = 0.0
+attr End_Crosswalk_To_Stop_Bar = 0.0
+attr Crosswalk_Gap = 4.5
+attr Left_Bike_Lane_Width = 1.5
+attr Right_Bike_Lane_Width = 1.5
+attr Buffer_Protection = true
+attr Bike_Lane_Color = "green"
+attr Right_Bike_Box = false
+attr Left_Bike_Box = false
+attr Sidewalk_Texture = "Complete_Streets/Sidewalks/Concrete Aggregate Light.jpg"
+attr Curb_Paint = "Painted"
+attr Sidewalk_Ground_Cover = "None"
+attr Sidewalk_Planting_Width = 0.0
+attr Sidewalk_Covered_Walkway = "Both"
+attr Sidewalk_Cover_Roof = "Angled"
+attr Sidewalk_Cover_ClearHeight = 2.5
+attr Sidewalk_Cover_ColumnPlacement = "Building Side"
+attr Sidewalk_Cover_RoofAngle = 16.0
+attr Vehicles_Per_KM = 0.0
+
+
+@Description("ped~cycXcar")
+style Type_2
+attr Space_Management = "Flag"
+attr Lane_Width = 3.3
+attr Traffic_Direction = "left-hand"
+attr Stop_Begin = "none"
+attr Stop_End = "none"
+attr Crosswalk_Begin = "dashed"
+attr Crosswalk_End = "dashed"
+attr Crosswalk_Width = 2.0
+attr Crosswalk_Gap = 1.26
+attr Right_Parking_Type = "Parallel"
+attr Left_Parking_Type = "Parallel"
+attr Parklet_Percentage = 0.0
+attr Center_Type = "Median"
+attr Center_Width = 0.5
+attr Planting_and_Walkway_Layout = ""
+attr Boulevard_Center_Type = "Chain Link Fence"
+attr Median_Tree_1_Type = "Coconut Palm"
+attr Median_Tree_1_Percentage = 1.0
+attr Median_Street_Lamps = "None"
+attr Transit_Lane_Width = 3.47
+attr Transit_Symbol_Spacing = 42.71
+attr Left_Bike_Lane_Width = 1.5
+attr Right_Bike_Lane_Width = 1.5
+attr Bike_Lane_Type = "Sidewalk"
+attr Buffer_Protection = false
+attr Bike_Lane_Color = "black"
+attr Sidewalk_Texture = "Complete_Streets/Sidewalks/Concrete Aggregate Light.jpg"
+attr Curb_Paint = "Painted"
+attr Sidewalk_Ground_Cover = "Random"
+attr Sidewalk_Planting_Width = 1.0
+attr Sidewalk_Planting_Spacing = 0.0
+attr Sidewalk_Tree_1_Percentage = 0.5
+attr Sidewalk_Street_Lamps = "Both"
+attr Sidewalk_Covered_Walkway = "none"
+attr Sidewalk_Cover_Roof = "Angled"
+attr Sidewalk_Cover_ColumnPlacement = "Building Side"
+attr Sidewalk_Cover_RoofAngle = 15.0
+attr Parked_Car_Percentage = 0.65
+
+
+@Description("pedXcycXcar")
+style Type_3
+attr Space_Management = "Flag"
+attr LOD_Setting = "Moderate"
+attr Traffic_Direction = "left-hand"
+attr Stop_Begin = "none"
+attr Stop_End = "none"
+attr Crosswalk_Begin = "dashed"
+attr Crosswalk_End = "dashed"
+attr Crosswalk_Width = 3.0
+attr Crosswalk_Gap = 3.73
+attr Center_Type = "Median"
+attr Center_Width = 1.0
+attr Transit_Lane = "Bus Lane"
+attr Transit_Lane_Sides = "Both"
+attr Bus_Lane_Color = "black"
+attr Left_Bike_Lane_Width = 1.5
+attr Right_Bike_Lane_Width = 1.5
+attr Bike_Lane_Type = "One-way"
+attr Right_Buffer_Width = 0.15
+attr Left_Buffer_Width = 0.15
+attr Buffer_Type = "Curb Buffer"
+attr Bike_Lane_Color = "green"
+attr Level_of_Blockage = "Moderate"
+attr Right_Bike_Box = true
+attr Left_Bike_Box = true
+attr Sidewalk_Texture = "Complete_Streets/Sidewalks/Concrete Aggregate Light.jpg"
+attr Sidewalk_Ground_Cover = "Standard Grass"
+attr Sidewalk_Planting_Length = 1.0
+attr Sidewalk_Planting_Spacing = 0.0
+attr Sidewalk_Tree_1_Type = "Oval-leaved Privet"
+attr Sidewalk_Tree_2_Type = "None"
+attr Traffic_Lights = "Both"
+
+
+@Description("pedXcyc+car")
+style Type_4
+attr Space_Management = "Flag"
+attr Traffic_Direction = "left-hand"
+attr Stop_Begin = "none"
+attr Stop_End = "none"
+attr Crosswalk_Begin = "dashed"
+attr Crosswalk_End = "dashed"
+attr Crosswalk_Gap = 3.0
+attr Center_Type = "Boulevard"
+attr Center_Width = 0.5
+attr WalkWay_Width = 0.0
+attr Boulevard_Inside_Width = 0.0
+attr Boulevard_Center_Type = "Gate Fence"
+attr Median_Ground_Cover = "Standard Grass"
+attr Median_Tree_1_Type = "Ficus"
+attr Median_Street_Lamps = "None"
+attr Left_Bike_Lane_Width = 1.5
+attr Right_Bike_Lane_Width = 1.5
+attr Buffer_Type = "Spaced Curb Buffer"
+attr Sidewalk_Texture = "Complete_Streets/Sidewalks/Concrete Aggregate Light.jpg"
+attr Sidewalk_Ground_Cover = "Standard Grass"
+attr Sidewalk_Planting_Spacing = 0.0
+attr Sidewalk_Tree_1_Percentage = 0.75
+attr Traffic_Lights = "Both"
+attr Sidewalk_Way_Finder = false
