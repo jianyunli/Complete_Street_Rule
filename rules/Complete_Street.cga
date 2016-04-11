@@ -119,6 +119,8 @@ attr Crosswalk_Color 			= "white"
 attr Custom_Crosswalk_Texture	= SidewalkFolder+"/Paver Brick Red Basket Weave.jpg"
 @Order(7) @Range(0,10)@Description("This attribrute overrides the default Crosswalk Width. NACTO- Stripe the crosswalk as wide as or wider than the walkway it connects to.")
 attr Crosswalk_Width			= _crosswalkWidth
+@Order(8) @Range(0,10)@Description("This attribrute specifies the gap between the crosswalk and intersection.")
+attr Crosswalk_Gap 				= _crosswalkWidth/10
 
 @Group("ROAD LAYOUT","On-Street Parking",5)
 @Order(1)@Range("None","Parallel","Angled Nose In","Angled Back In") @Description("Will create parking of that type with default lengths and widths. Keep in mind, adjusting the length/width will make it lock onto that value. To reset it to automatic default, set the Attribute Connection Editor back to rule-defined value.")
@@ -726,6 +728,9 @@ const _neighborEnd			= case _hasStop(connectionEnd):1 else: 0
 const _crosswalkWidth		= case _Maxof(sidewalkWidthLeft,sidewalkWidthRight)==0:3 else:(_Maxof(sidewalkWidthLeft,sidewalkWidthRight)+0.05)//changed to match width of largest sidewalk +0.05 (2 inches), if 0 default is 2. 
 const _crosswalkBeginWidth	= case Crosswalk_Begin =="none": 0 else: (Crosswalk_Width)
 const _crosswalkEndWidth 	= case Crosswalk_End =="none"  : 0 else: (Crosswalk_Width)
+const _crosswalkBeginGap 	= case Crosswalk_End =="none"  : 0 
+							  case Crosswalk_Begin =="none": 0
+							  else: (Crosswalk_Gap)
 const _centerWidth	 		= case oneWay: 0 
 							  case Center_Type=="Barrier":.98
 							  case Center_Type=="Barrier & Shoulder":Center_Width
@@ -1301,7 +1306,7 @@ Street -->	#DeleteUV if texturing is off
 		report("Speed.Braking Reaction Distance (ft)",Brake_Reaction_Dist)#Assumes Level elevation
 		report("Speed.Stopping Sight Distance (ft)",Stopping_Sight_Dist)#Design Value is rounded to nearest 5 feet,Assumes Level elevation
 		BridgeMain
-		split(u,uvSpace,1){_crosswalkBeginWidth/10: Asphalt(true,1,"Auto")
+		split(u,uvSpace,1){_crosswalkBeginGap: Asphalt(true,1,"Auto")
 					  | _crosswalkBeginWidth  : Crosswalk( Crosswalk_Begin ,1)
  					  | ~1			  		  : StreetWithCrosswalkEnd }
  	else: #If the street is too short no stop lines, no bike boxes. 
@@ -1322,11 +1327,11 @@ Street -->	#DeleteUV if texturing is off
 # split away the crosswalks at the end (if any) using the special UVSET 2
 StreetWithCrosswalkEnd -->	
 	#print("DirLane "+str(DirLaneTotal))
-	split(u,uvSpace,2){ _crosswalkEndWidth/10: Asphalt(true,1,"Auto")
+	split(u,uvSpace,2){ _crosswalkBeginGap : Asphalt(true,1,"Auto")
 					  | _crosswalkEndWidth    : Crosswalk( Crosswalk_End ,2)
- 					  | ~1			  		  : CrossWalkGap}
+ 					  | ~1			  		  : CrossWalkEndGap}
  					  
-CrossWalkGap--> 
+CrossWalkEndGap --> 
 #This solution while imperfect and vulnerable to distortion prevents UVspace/UnitSpace conflicts from cutting geometry. User can adjust relative gaps to compensate. 
 	split(u,unitSpace,0) {( Begin_Crosswalk_To_Stop_Bar ):Asphalt(true,1,"Auto")
 						 |~1:StreetWithEntries
