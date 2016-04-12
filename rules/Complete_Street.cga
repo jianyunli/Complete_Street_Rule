@@ -2726,6 +2726,7 @@ Sidewalk_Pavement (Location) -->
 		rotateUV(0, Sidewalk_Texture_Rotation)
 		report("Sidewalk."+Location+" Area (m^2)",geometry.area())
 	case Location=="Undercover":
+		extrude(0.001)
 		alignScopeToAxes(y)
 		tileUV(0,2,2)
 		texture(Sidewalk_Texture)
@@ -2754,6 +2755,7 @@ Sidewalk_Pavement (Location) -->
 
 Covered_Walkway_Base --> extrude(Sidewalk_Cover_ClearHeight)
 comp(f) {top : Roof_Start | bottom : Sidewalk_Pavement ("Undercover")}
+
 
 Roof_Start --> 
 	case Sidewalk_Cover_Roof == "Angled" : roofShed(Sidewalk_Cover_RoofAngle) comp(f){ top : Roof_Slope | side : NIL }
