@@ -2223,11 +2223,13 @@ Bus_Objects_Insert(Object_Identity,File_Extension,RotationAng,Translation,SX,SY,
 		alignScopeToGeometry(yUp, largest, 1)
 		rotateScope(0,RotationAng,0)
 		center(xz)
-		t(scope.sx-SX,0,0)
-		t(Translation,0,0)
+		#t(scope.sx-SX,0,0)
+		t(-0.1*Translation,0,0)
 		report("Objects."+Object_Identity+" Count",1)
 		i(File_Extension)
-		s(SX,SY,SZ)
+		#New Bus stop type
+		s(0.1,2.2,1.5)
+		#s(SX,SY,SZ)
 		deleteUV(_Texture_Switch)
 		
 Bike_Rack_Split(RotationAng,Translation)-->
