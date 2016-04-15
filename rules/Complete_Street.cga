@@ -3309,8 +3309,9 @@ Drainage-->
 Fence(Location)-->
 	split(v,unitSpace,0) {~1:NIL|
 						 .05:FenceMesh
-						 |~1:NIL}
-	FencePoles
+						 |~1:NIL} 
+						 
+						 #FencePoles
 
 FenceMesh -->
 	extrude(world.y,1.3)
@@ -3319,7 +3320,7 @@ FenceMesh -->
 	FencePrep
 
 FencePrep-->
-	comp(f) {left=FenceTexture|all:NIL}
+	comp(f) {left=FenceTexture|right=FenceTexture|all:NIL}
 	
 FenceTexture -->
 	case Boulevard_Center_Type=="Chain Link Fence":
