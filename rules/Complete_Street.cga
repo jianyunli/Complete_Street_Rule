@@ -2728,7 +2728,7 @@ Sidewalk_Pavement (Location) -->
 		rotateUV(0, Sidewalk_Texture_Rotation)
 		report("Sidewalk."+Location+" Area (m^2)",geometry.area())
 	case Location=="Undercover":
-		extrude(0.001)
+		reverseNormals
 		alignScopeToAxes(y)
 		tileUV(0,2,2)
 		texture(Sidewalk_Texture)
@@ -2779,7 +2779,7 @@ Column_LengthSection --> case Sidewalk_Cover_ColumnPlacement == "Road Side" :
 	Sidewalk_Cover_ColumnSize : ColumnBase | 
 	Sidewalk_Cover_ColumnOffset : Sidewalk_Pavement("UnderCover") }
 
-ColumnBase --> extrude(world.y, -Sidewalk_Cover_ClearHeight*2)
+ColumnBase --> reverseNormals extrude(world.y, -Sidewalk_Cover_ClearHeight*2)
 
 Roof_Material --> texture(Sidewalk_Texture) 
 
