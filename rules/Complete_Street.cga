@@ -2783,6 +2783,8 @@ ColumnBase --> reverseNormals extrude(world.y, -Sidewalk_Cover_ClearHeight*2)
 
 Roof_Material --> texture(Sidewalk_Texture) 
 
+####################################################################################################
+
 Sidewalk_WPlant_Loading_Section (Dir)-->
 	split(u,unitSpace,0){(_Sidewalk_CrossStop_Gap(Dir,"Begin")): Sidewalk_Pavement ("Cross Walk Begin Gap")
 						|~_Bus_Sidewalk_Base("Near-side"):Bus_Stop_Base("Sidewalk",0)
