@@ -1306,7 +1306,7 @@ Street -->	#DeleteUV if texturing is off
 		report("Speed.Braking Reaction Distance (ft)",Brake_Reaction_Dist)#Assumes Level elevation
 		report("Speed.Stopping Sight Distance (ft)",Stopping_Sight_Dist)#Design Value is rounded to nearest 5 feet,Assumes Level elevation
 		BridgeMain
-		split(u,uvSpace,1){_crosswalkBeginGap: Asphalt(true,1,"Auto")
+		split(u,uvSpace,1){_crosswalkEndWidth: Asphalt(true,1,"Auto")
 					  | _crosswalkBeginWidth  : Crosswalk( Crosswalk_Begin ,1)
  					  | ~1			  		  : StreetWithCrosswalkEnd }
  	else: #If the street is too short no stop lines, no bike boxes. 
@@ -1327,7 +1327,7 @@ Street -->	#DeleteUV if texturing is off
 # split away the crosswalks at the end (if any) using the special UVSET 2
 StreetWithCrosswalkEnd -->	
 	#print("DirLane "+str(DirLaneTotal))
-	split(u,uvSpace,2){ _crosswalkBeginGap : Asphalt(true,1,"Auto")
+	split(u,uvSpace,2){ _crosswalkEndWidth : Asphalt(true,1,"Auto")
 					  | _crosswalkEndWidth    : Crosswalk( Crosswalk_End ,2)
  					  | ~1			  		  : CrossWalkEndGap}
  					  
