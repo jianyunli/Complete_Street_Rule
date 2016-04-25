@@ -1,0 +1,22 @@
+#
+## Alias OBJ Material File
+# Exported from SketchUp, (c) 2000-2012 Trimble Navigation Limited
+
+newmtl Metal_Brushed
+Ka 0.000000 0.000000 0.000000
+Kd 0.513725 0.549020 0.607843
+Ks 0.330000 0.330000 0.330000
+map_Kd Bus_Stop_2/Metal_Brushed.jpg
+
+newmtl Concrete_Gray
+Ka 0.000000 0.000000 0.000000
+Kd 0.654902 0.654902 0.654902
+Ks 0.330000 0.330000 0.330000
+map_Kd Bus_Stop_2/Concrete_Gray.jpg
+
+newmtl Translucent_Glass_Gray
+Ka 0.000000 0.000000 0.000000
+Kd 0.501961 0.501961 0.501961
+Ks 0.330000 0.330000 0.330000
+d 0.500000
+

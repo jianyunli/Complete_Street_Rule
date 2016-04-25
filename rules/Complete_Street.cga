@@ -120,7 +120,7 @@ attr Custom_Crosswalk_Texture	= SidewalkFolder+"/Paver Brick Red Basket Weave.jp
 @Order(7) @Range(0,10)@Description("This attribrute overrides the default Crosswalk Width. NACTO- Stripe the crosswalk as wide as or wider than the walkway it connects to.")
 attr Crosswalk_Width			= _crosswalkWidth
 @Order(8) @Range(0,10)@Description("This attribrute specifies the gap between the crosswalk and intersection.")
-attr Crosswalk_Gap 				= _crosswalkWidth/10
+attr Crosswalk_Gap 				= 3
 
 @Group("ROAD LAYOUT","On-Street Parking",5)
 @Order(1)@Range("None","Parallel","Angled Nose In","Angled Back In") @Description("Will create parking of that type with default lengths and widths. Keep in mind, adjusting the length/width will make it lock onto that value. To reset it to automatic default, set the Attribute Connection Editor back to rule-defined value.")
@@ -728,7 +728,7 @@ const _neighborEnd			= case _hasStop(connectionEnd):1 else: 0
 const _crosswalkWidth		= case _Maxof(sidewalkWidthLeft,sidewalkWidthRight)==0:3 else:(_Maxof(sidewalkWidthLeft,sidewalkWidthRight)+0.05)//changed to match width of largest sidewalk +0.05 (2 inches), if 0 default is 2. 
 const _crosswalkBeginWidth	= case Crosswalk_Begin =="none": 0 else: (Crosswalk_Width)
 const _crosswalkEndWidth 	= case Crosswalk_End =="none"  : 0 else: (Crosswalk_Width)
-const _crosswalkBeginGap 	= case Crosswalk_End =="none"  : 0 
+const _crosswalkGap 	= case Crosswalk_End =="none"  : 0 
 							  case Crosswalk_Begin =="none": 0
 							  else: (Crosswalk_Gap)
 const _centerWidth	 		= case oneWay: 0 
@@ -1306,7 +1306,7 @@ Street -->	#DeleteUV if texturing is off
 		report("Speed.Braking Reaction Distance (ft)",Brake_Reaction_Dist)#Assumes Level elevation
 		report("Speed.Stopping Sight Distance (ft)",Stopping_Sight_Dist)#Design Value is rounded to nearest 5 feet,Assumes Level elevation
 		BridgeMain
-		split(u,uvSpace,1){_crosswalkEndWidth: Asphalt(true,1,"Auto")
+		split(u,uvSpace,1){_crosswalkGap: Asphalt(true,1,"Auto")
 					  | _crosswalkBeginWidth  : Crosswalk( Crosswalk_Begin ,1)
  					  | ~1			  		  : StreetWithCrosswalkEnd }
  	else: #If the street is too short no stop lines, no bike boxes. 
@@ -1327,7 +1327,7 @@ Street -->	#DeleteUV if texturing is off
 # split away the crosswalks at the end (if any) using the special UVSET 2
 StreetWithCrosswalkEnd -->	
 	#print("DirLane "+str(DirLaneTotal))
-	split(u,uvSpace,2){ _crosswalkEndWidth : Asphalt(true,1,"Auto")
+	split(u,uvSpace,2){ _crosswalkGap : Asphalt(true,1,"Auto")
 					  | _crosswalkEndWidth    : Crosswalk( Crosswalk_End ,2)
  					  | ~1			  		  : CrossWalkEndGap}
  					  
@@ -2223,12 +2223,12 @@ Bus_Objects_Insert(Object_Identity,File_Extension,RotationAng,Translation,SX,SY,
 		alignScopeToGeometry(yUp, largest, 1)
 		rotateScope(0,RotationAng,0)
 		center(xz)
-		#t(scope.sx-SX,0,0)
+		t(scope.sx/3,0,scope.sx)
 		t(-0.1*Translation,0,0)
 		report("Objects."+Object_Identity+" Count",1)
 		i(File_Extension)
 		#New Bus stop type
-		s(0.1,2.2,1.5)
+		s(1.1,2.3,3.5)
 		#s(SX,SY,SZ)
 		deleteUV(_Texture_Switch)
 		
@@ -2804,7 +2804,9 @@ Sidewalk_WOPlant_Loading_Section (Dir)-->
 						|(_Sidewalk_CrossStop_Gap(Dir,"End") ): Sidewalk_Pavement ("Cross Walk End Gap")People}
 
 Sidewalk_Bike_Lane_Loader(Dir)-->
-	split(u,unitSpace,0){~1:scaleUV(0,DirectionalFlip,1)BikeLane(-1,_Sidewalk_BikeLane_Width(Dir))}
+	split(u,unitSpace,0){~geometry.du(0,unitSpace)/2:scaleUV(0,DirectionalFlip,1)BikeLane(-1,_Sidewalk_BikeLane_Width(Dir))
+						| ~_Bus_Sidewalk_Base("Mid-Block"):Sidewalk_Pavement("Through Zone")
+						| ~geometry.du(0,unitSpace)/2:scaleUV(0,DirectionalFlip,1)BikeLane(-1,_Sidewalk_BikeLane_Width(Dir))}
 
 Sidewalk_Object_Split(RotationAng)-->
 	split(u,unitSpace,0){'_Bus_Alloc("Sidewalk"):Bus_Objects_Insert("Bus Stop",Bus_Stop_Object,RotationAng,Sidewalk_Bus_Stop_Setback,2,3,3.35)
