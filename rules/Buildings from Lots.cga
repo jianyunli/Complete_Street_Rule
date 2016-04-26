@@ -1,0 +1,260 @@
+/**
+ * File:    Buildings from Lots.cga
+ * Created: 13 Apr 2016 06:56:35 GMT
+ * Author:  Tanvi
+ */
+
+version "2015.2"
+import Tree : "/ESRI.lib/rules/Plants/Plant_Loader_Singapore.cga"
+
+@Group("Footprint",1)  @Range(3,20)
+attr distanceStreet = 
+	20% : 0
+	else : rand(3,20)
+@Group("Footprint")  @Range(4,20)
+attr distanceBuildings = 
+	50% : 0
+	else : rand(4,20)
+
+@Group("Building",2) @Range(20,200)
+attr height = 
+	case geometry.area > 1000: rand(20,80) 
+	else: rand(8,20)
+@Group("Building") @Range("auto","lLeft","lRight","uShape", "basicExtrude")
+attr shape = "auto"
+@Group("Building",2) @Range(0.3,1.2)
+attr setbackScale 	= rand(0.75,0.9)		// has to be constant
+@Group("LU-Shape",3) @Range(10,20)
+attr wingWidth = rand(10,20)
+
+@Group("Facade",3)  @Range(3,6)
+attr floorheight = rand(4,5)
+@Group("Facade") 
+attr textured = true
+@Group("Facade") 
+attr massColor = "#ffffff"
+
+
+@StartRule	
+Lot --> 95% : Parcel else : Park
+
+Park --> scatter(surface,rand(10,50),uniform) { Tree.Generate("Persian Silk Tree") } Plaza 
+Planter --> scatter(surface,rand(1,2),uniform) { Tree.Generate} Plaza
+#Tree_Scatter-->
+	#scatter(surface,3,gaussian,center) { Tree.Generate }
+
+
+
+######################
+## Setback Parcels
+######################
+
+@StartRule	
+Parcel --> 
+	setback(distanceStreet)
+		{ street.front: Frontage
+		| remainder: SubParcel }
+Frontage --> split(x){~1:FrontSpace | 4:Entry | ~1:FrontSpace}
+FrontSpace --> setback(5)
+		{ street.front : Drain
+		| remainder: FrontOpenSpace }
+
+#Drain --> split(x){2:Hedge | ~1:RaisedDrain }
+Drain --> setback(2)
+		  {street.front: Hedge 
+		 | remainder: RaisedDrain }
+
+Hedge --> split(u, unitSpace, 0){4 : TreeInsert}*
+TreeInsert --> Tree.RandomGenerate("Huckleberry Shrub") Plaza
+
+RaisedDrain --> envelope(normal, 0.5, 0, 10)Plaza
+Entry --> split(x){1:Planter | ~1:Path | 1:Planter}
+
+SubParcel -->
+	setback(distanceBuildings/2)
+		{ street.back : SideOpenSpace 
+		| street.side : SideOpenSpace 
+		| remainder: Footprint }		
+
+#####################
+@StartRule	
+Footprint -->
+	case geometry.isRectangular(15):
+		 LUShape
+	else:
+		offset(-5)Base
+	
+######################
+## LU Shapes
+######################
+
+LUShape -->
+  case shape =="lLeft" : LShape("l")
+  case shape =="lRight" : LShape("r")
+  case shape =="uShape" : UShape
+  case shape =="basicExtrude" : offset(-5) Base
+    else :
+	case geometry.isRectangular(10):
+		case scope.sx > scope.sz : 
+			60%  :UShape
+			else : 50% : LShape("l") else : LShape("r")
+		else: 50% : LShape("l") else : LShape("r")
+	else: offset(-5) Base
+	
+Base --> comp(f){ inside: BasicFootprint | border : SideOpenSpace }
+
+
+LShape(orient) --> 
+	case orient =="l": shapeL(wingWidth,wingWidth) {shape : LFootprint | remainder : Plaza}  // left L
+	else: rotateScope(0,-90,0) shapeL(wingWidth,wingWidth) {shape : LFootprint | remainder : Plaza}	// right L
+
+LFootprint --> 
+	60% : extrude(height) Mass
+	else : convexify comp(f){1 : extrude(height) Mass | all : extrude(height*0.7) Mass}
+
+
+UShape -->
+	80% : rotateScope(0,180,0) shapeU(scope.sx*rand(0.3,0.5),scope.sz*rand(0.3,0.4),scope.sz*rand(0.3,0.4)) { shape : UFootprint | remainder : Plaza }	
+	else:  shapeU(scope.sx*rand(0.3,0.5),scope.sz*rand(0.3,0.4),scope.sz*rand(0.3,0.4)) { shape : UFootprint | remainder : Plaza }	
+
+UFootprint --> extrude(height) Mass
+
+
+BasicFootprint --> extrude(height) Mass
+	
+	
+//////////////////
+//   Facades    //	
+//////////////////
+
+actualFloorHeight =  
+	case scope.sy >= 1 : scope.sy/rint(scope.sy/floorheight)
+	else : scope.sy
+	
+actualTileWidth = 
+	case scope.sx >= 2 : scope.sx/rint(scope.sx/4)
+	else : scope.sx
+
+
+Mass --> 
+	case textured : color(massColor) comp(f){ side: Facade | top: Roof }
+	else : color(massColor) Mass.
+
+
+//////////////////
+//   Textures   //	
+//////////////////	
+
+@Group("Texture",4)@Range(1,17)
+attr TextureSeed = str(rint (rand(1,17)))
+@Group("Texture",4)@Range(1,11)
+attr PaveTexSeed = str(rint (rand(1,11)))
+@Group("Texture",4)@Range(1,5)
+attr GreenTexSeed = str(rint (rand(1,5)))
+@Group("Texture",4)@Range(0,1)
+attr WallRed = rand(0.9,1)
+@Group("Texture",4)@Range(0,1)
+attr WallGreen = rand(0.9,1)
+@Group("Texture",4)@Range(0,1)
+attr WallBlue = rand(0.9,1)
+@Group("Texture",4)@Range(0,1)
+attr WallOpacity = 1
+@Group("Texture",4)
+
+const flatRoofColor = 10%: .6  25%: .7  30%: .8  25%: .9 
+					  else: 1
+					  				
+const topTexture = "Buildings from Lots/new_facade/Tfac"+TextureSeed+".jpg"
+const midTexture = "Buildings from Lots/new_facade/fac"+TextureSeed+".jpg"
+const botTexture = "Buildings from Lots/new_facade/Bfac"+TextureSeed+".jpg"
+const topBump = "Buildings from Lots/new_facade/Tbump"+TextureSeed+".jpg"
+const midBump = "Buildings from Lots/new_facade/bump"+TextureSeed+".jpg"
+const botBump = "Buildings from Lots/new_facade/Bbump"+TextureSeed+".jpg"
+
+const randomRoofTexture = fileRandom("*/roof_textures/flatRoof*.jpg")
+const GreenTexture = fileRandom("*/Green_textures/Grass"+GreenTexSeed+"*")
+const GreenTextureNorm = fileRandom("*/Green_textures/Norm"+GreenTexSeed+"*")
+const PaveTexture = fileRandom("*/Pave_textures/Pave"+PaveTexSeed+"*")
+const PaveTextureNorm = fileRandom("*/Pave_textures/Norm"+PaveTexSeed+"*")
+const dirtmapTexture = fileRandom("*/dirtmap/dirtmap*.jpg")
+
+	  
+ flatRoofTextureDimension(width) =
+	case width > 40	: rand(40,80)
+	case width > 20	: rand(20,40)
+	else 			: width
+	
+	
+Facade --> split(y){actualFloorHeight : BuildingBot | ~1 : BuildingMid | actualFloorHeight : BuildingTop}
+	
+	
+BuildingBot -->	setupProjection(0, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				setupProjection(1, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				set(material.bumpmap,botBump)
+				set(material.colormap, botTexture)
+				color(WallRed, WallGreen, WallBlue, WallOpacity)
+				projectUV(0)
+				projectUV(1)	
+BuildingMid -->	setupProjection(0, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				setupProjection(1, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				set(material.bumpmap,midBump)
+				set(material.colormap, midTexture)
+				color(WallRed, WallGreen, WallBlue, WallOpacity)
+				projectUV(0)
+				projectUV(1)	
+BuildingTop -->	setupProjection(0, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				setupProjection(1, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				set(material.bumpmap,topBump)
+				set(material.colormap, topTexture)
+				color(WallRed, WallGreen, WallBlue, WallOpacity)
+				projectUV(0)
+				projectUV(1)	
+
+
+Roof --> alignScopeToGeometry(yUp, any, longest)
+		 setupProjection(0,
+					scope.xz,
+					flatRoofTextureDimension(scope.sx),
+					flatRoofTextureDimension(scope.sz)) 
+		 setupProjection(5,
+					scope.xz,
+					flatRoofTextureDimension(scope.sx),
+					flatRoofTextureDimension(scope.sz))
+	color(flatRoofColor,flatRoofColor,flatRoofColor)
+	set(material.normalmap,randomRoofTexture)
+	set(material.colormap, randomRoofTexture)
+	projectUV(0)
+	projectUV(5)
+	
+FrontOpenSpace --> extrude(0.5)
+	setupProjection(0, scope.xz, 2, 2 )
+	setupProjection(5, scope.xz, 2, 2 )
+	set(material.colormap,PaveTexture)	
+	set(material.normalmap,PaveTextureNorm)
+	projectUV(0)
+	projectUV(5)
+				
+Path --> extrude(0.1)
+	setupProjection(0, scope.xz, 2, 2 )
+	setupProjection(5, scope.xz, 2, 2 )
+	set(material.colormap,PaveTexture)	
+	set(material.normalmap,PaveTextureNorm)
+	projectUV(0)
+	projectUV(5)
+
+	
+SideOpenSpace --> extrude(0.5)
+	setupProjection(0, scope.xz, 2, 2 )
+	setupProjection(5, scope.xz, 2, 2 )
+	set(material.colormap,GreenTexture)	
+	set(material.normalmap,GreenTextureNorm)
+	projectUV(0)
+	projectUV(5)
+						
+Plaza -->
+	setupProjection(0, scope.xz, 2, 2 )
+	setupProjection(5, scope.xz, 2, 2 )
+	set(material.colormap,GreenTexture)	
+	set(material.normalmap,GreenTextureNorm)
+	projectUV(0)
+	projectUV(5)
