@@ -1,0 +1,42 @@
+#
+## Alias OBJ Material File
+# Exported from SketchUp, (c) 2000-2012 Trimble Navigation Limited
+
+newmtl _Color_M03_1
+Ka 0.000000 0.000000 0.000000
+Kd 0.666667 0.666667 0.666667
+Ks 0.330000 0.330000 0.330000
+
+newmtl Color_M02
+Ka 0.000000 0.000000 0.000000
+Kd 0.729412 0.729412 0.729412
+Ks 0.330000 0.330000 0.330000
+
+newmtl _Metal_Corrugated_Shiny_1
+Ka 0.000000 0.000000 0.000000
+Kd 0.752941 0.752941 0.752941
+Ks 0.330000 0.330000 0.330000
+map_Kd Tubular_Marker_2/_Metal_Corrugated_Shiny_1.jpg
+
+newmtl Metal_Seamed
+Ka 0.000000 0.000000 0.000000
+Kd 0.462745 0.466667 0.450980
+Ks 0.330000 0.330000 0.330000
+map_Kd Tubular_Marker_2/Metal_Seamed.jpg
+
+newmtl Color_M03
+Ka 0.000000 0.000000 0.000000
+Kd 0.576471 0.576471 0.576471
+Ks 0.330000 0.330000 0.330000
+
+newmtl Color_E04
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 0.196078
+Ks 0.330000 0.330000 0.330000
+
+newmtl _Aluminum_1
+Ka 0.000000 0.000000 0.000000
+Kd 0.701961 0.701961 0.701961
+Ks 0.330000 0.330000 0.330000
+map_Kd Tubular_Marker_2/_Aluminum_1.jpg
+

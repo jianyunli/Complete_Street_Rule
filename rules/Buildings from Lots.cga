@@ -216,14 +216,14 @@ Roof --> alignScopeToGeometry(yUp, any, longest)
 					scope.xz,
 					flatRoofTextureDimension(scope.sx),
 					flatRoofTextureDimension(scope.sz)) 
-		 setupProjection(5,
-					scope.xz,
-					flatRoofTextureDimension(scope.sx),
-					flatRoofTextureDimension(scope.sz))
+		# setupProjection(5,
+					#scope.xz,
+					#flatRoofTextureDimension(scope.sx),
+					#flatRoofTextureDimension(scope.sz))
 	color(flatRoofColor,flatRoofColor,flatRoofColor)
-	set(material.normalmap,randomRoofTexture)
+	#set(material.normalmap,randomRoofTexture)
 	set(material.colormap, randomRoofTexture)
-	projectUV(0)
+	#projectUV(0)
 	projectUV(5)
 	
 FrontOpenSpace --> extrude(0.5)

@@ -1643,7 +1643,7 @@ BikeBuffer(Buffer_Width,Dir)-->
 	case Buffer_Type=="Cycle Track With Tubular Markers":
 		color( _ModeClassifier ("Bikeways"))#If Display Thematics==Usage, goes to usage, if not, Thematic. 
 		Striped_Buffer(Buffer_Width)
-		ObjectSetup("Tubular Marker",Buffer_Object_Spacing,"/Tubular_Marker.obj",Buffer_Width)
+		ObjectSetup("Tubular Marker",Buffer_Object_Spacing,"/Tubular_Marker_2.obj",Buffer_Width)
 	case Buffer_Type=="Spaced Curb Buffer":
 		color( _ModeClassifier ("(Bikeways"))
 		split(u,unitSpace,0) {{~Buffer_Object_Spacing:Asphalt(true,1,"Bikeways")
@@ -1664,7 +1664,7 @@ ObjectSetup(Object_Type,distance_between_objs,File_Extension,Width)-->
 Cycle_Track_ObjIns(Object_Type,Buffer_File,Width)-->
 	alignScopeToAxes(y)
 	alignScopeToGeometry(yUp,largest,0)
-	s(0,0,0)
+	s(0.1,0.7,0.1)
 	i(ObjectFolder+Buffer_File)
 	deleteUV(_Texture_Switch)
 	report("Objects."+Object_Type+ " Count",1)
@@ -2223,12 +2223,12 @@ Bus_Objects_Insert(Object_Identity,File_Extension,RotationAng,Translation,SX,SY,
 		alignScopeToGeometry(yUp, largest, 1)
 		rotateScope(0,RotationAng,0)
 		center(xz)
-		t(scope.sx/3,0,scope.sx)
-		t(-0.1*Translation,0,0)
+		#t(scope.sx/3,0,scope.sx)
+		t(-0.7,0,3)
 		report("Objects."+Object_Identity+" Count",1)
 		i(File_Extension)
 		#New Bus stop type
-		s(1.1,2.3,3.5)
+		s(1.8,2.5,4)
 		#s(SX,SY,SZ)
 		deleteUV(_Texture_Switch)
 		
@@ -2352,7 +2352,7 @@ Lamp_Center_Asset(Side_Rotation,Shape_Edge,Dir)-->
 	alignScopeToGeometry(yUp, largest,Shape_Edge)
 	alignScopeToAxes(y)		// place the Lamps vertically
 	center(xz)
-	s(0,5,0)				//set initital height to 5 others are based on OBJ
+	s(0,7,0)				//set initital height to 5 others are based on OBJ
 	r(0,Side_Rotation,0)
 	report("Objects.Street Lamp Count", 1)
 	i(Street_Lamp_Object)
@@ -2555,8 +2555,7 @@ Tree_Scatter-->
 # Sidewalk
 #
 
-Sidewalk-->
-	BridgeSide
+Sidewalk--> BridgeSide
 	set(sidewalkWidth,scope.sz)
 	set(sidewalkLength,scope.sx)
 	color( _ModeClassifier ("Pedestrian"))#If Display Thematics==Usage, goes to usage, if not, Thematic. 
@@ -2676,7 +2675,7 @@ Traffic_Light_Asset(index)-->
 Lamp(index) -->
 	alignScopeToAxes(y)		// place the Lamps vertically
 	center(xz)
-	s(0,5,0)				// set height to 5 meters
+	s(0,7,0)				// set height to 5 meters
 	report("Objects.Street Lamp Count", 1)
 	LampAsset(index)		// since the scope's dimenstion are zero in x and z, these are set according to the asset
 
