@@ -94,7 +94,7 @@ attr Lane_Width					= (laneWidth-.2)
 @Order(3) @Range("yellow","white","none") @Description("Choses color for the centerline if there is a center line. This attribute does nothing to other center types.")
 attr Centerline_Color 			= _getInitialCenterline
 @Order(4) @Range("right-hand","left-hand")@Description("Orients the road for right vs. left traffic. Please note that some aspects of the rule do not *flip* when this is changed such as the median.")
-attr Traffic_Direction			= "right-hand"
+attr Traffic_Direction			= "left-hand"
 @Order(5) @Range(0,80) @Description("A descriptive attribute that feeds into reporting. If >= 40 mph, Design Speed is calculated as Speed_Limit +7.5, if less than 40, design speed is assumed equal to the Speed_Limit (see comments for details). 1 MPH==1.6093 KPH.")
 attr Speed_Limit_in_MPH			= _InititalSpeedLimit		
 
