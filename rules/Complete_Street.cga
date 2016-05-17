@@ -223,7 +223,7 @@ attr Left_Buffer_Width			= 0
 attr Buffer_Protection			= true
 @Order(7)@Description("If on/true, parking lane is closer to the through lane, and bicycle lane is protected from through traffic. Keep in mind how the door zone influences bicycle lane placement.")
 attr Parking_Protection 		= _IsCycleTrackBuffer
-@Order(8)@Range("Painted Stripes","Curb Buffer","Curb Buffer with Plantings","Curb Buffer with Trees","Solid White","Cycle Track With Planters","Cycle Track With Tubular Markers","Spaced Curb Buffer","Asphalt","Shoulder")@Description("This attribute controls the bicycle buffer type and form, but also can become plain asphalt or a shoulder.")
+@Order(8)@Range("Painted Stripes","Curb Buffer","Curb Buffer with Plantings","Curb Buffer with Trees","Solid White","Cycle Track With Planters","Cycle Track With Tubular Markers","Spaced Curb Buffer","Asphalt","Shoulder","Fence")@Description("This attribute controls the bicycle buffer type and form, but also can become plain asphalt or a shoulder.")
 attr Buffer_Type				="Painted Stripes"
 @Order(9)@Range(0,10)@Description("Controls  the buffers spacing of objects such as tubular markers, planters, and tree/plantings (Trees/Plants match Sidewalk Plantings if selected).")#@Hidden			
 attr Buffer_Object_Spacing		=_Default_Buffer_Object_Spacing
@@ -231,7 +231,7 @@ attr Buffer_Object_Spacing		=_Default_Buffer_Object_Spacing
 attr Bike_Symbol_Spacing		= 24.5
 @Order(11)@Range(0,20) @Description("Creates conflict spacing made up by asphalt gaps in the bike lane for approaching interesections.")
 attr Bike_Conflict_Spacing		= 0
-@Order(12)@Range("green","black","red","blue") @Description("Determines the color of the bike lane and bike box. Paint reporting costs adjust based on color choices.")
+@Order(12)@Range("green","black","red","blue","paver") @Description("Determines the color of the bike lane and bike box. Paint reporting costs adjust based on color choices.")
 attr Bike_Lane_Color			= case Bike_Lane_Type=="Sharrow":"green" else: "black"
 @Order(13)@Range("Both","Right", "Left", "None")@Description("Controls the white lines on the sides of preferential lanes.")#@Hidden
 attr Bike_Paint_Line_Sides  	="Both"
@@ -348,6 +348,8 @@ attr Parked_Car_Percentage			= case Not_High_LOD:0 else: .6
 attr Right_Parked_Car_Angle			= _Right_Car_Angle
 @Order(9)@Hidden @Range(0,360)@Description("When parking is angled, this determines the angle of the vehicles placed in each left side angled parking spot.")
 attr Left_Parked_Car_Angle			= _Left_Car_Angle
+@Order(10) @Range(0,100)@Description("Determines the number of bicyclists per KM of sidewalk length.")
+attr Mixed_Bicycle_Percentage			= 0
 
 @Group("CUSTOM OBJECTS",90) 
 @Order(1)@File("dae","dxf","gdb","kml","kmz","obj","osm","shp")@Description("Make sure object/3D files are aligned so that UP is aligned to the Y Axis. Keep in mind objs were inserted assuming a standard alignment.")#@Hidden
@@ -1644,6 +1646,10 @@ BikeBuffer(Buffer_Width,Dir)-->
 		split(u,unitSpace,0) {{~Buffer_Object_Spacing:Asphalt(true,1,"Bikeways")
 								|~Buffer_Object_Spacing:Raised_Curb("Buffer",1)}*
 								|~Buffer_Object_Spacing:Asphalt(true,1,"Bikeways")}
+	case Buffer_Type=="Fence":
+		color( _ModeClassifier ("Bikeways"))#If Display Thematics==Usage, goes to usage, if not, Thematic. 
+		Striped_Buffer(Buffer_Width)
+		Fence("Buffer")
 	else:
 		color( _ModeClassifier ("Bikeways"))#If Display Thematics==Usage, goes to usage, if not, Thematic. 
 		Striped_Buffer(Buffer_Width)
@@ -3046,14 +3052,45 @@ peopleAsset = fileRandom(StreetTextureFolder + "/LowPolygon3D.com_People/*.obj")
 dirHuman = 50%: 90 else: -90
 
 People -->
-	case geometry.du(0,unitSpace) > 20:
-		split(u,unitSpace,0){ '0.5: People | '0.5: People }
-	case People_Percentage > 0:
-		50% : split(u,unitSpace,0){ { 0.1: Human | ~rand(2,5): NIL | 0.1: Human | ~rand(2,5): NIL }* | 0.1: Human }          # could be distributed better...
-		else: split(u,unitSpace,0){ { 0.1: Human | ~rand(0.5,5.5): NIL | 0.1: Human | ~rand(0.5,5.5): NIL }* | 0.1: Human }  # could be distributed better...
+	case Mixed_Bicycle_Percentage == 0:
+		case geometry.du(0,unitSpace) > 20:
+			split(u,unitSpace,0){ '0.5: People | '0.5: People }
+		case People_Percentage > 0:
+			50% : split(u,unitSpace,0){ { 0.1: Human | ~rand(2,5): NIL | 0.1: Human | ~rand(2,5): NIL }* | 0.1: Human }          # could be distributed better...
+			else: split(u,unitSpace,0){ { 0.1: Human | ~rand(0.5,5.5): NIL | 0.1: Human | ~rand(0.5,5.5): NIL }* | 0.1: Human }  # could be distributed better...
+		else:
+			NIL
 	else:
-		NIL
+	Mixed_Bicycle
 	
+	
+	
+Mixed_Bicycle --> 
+		case geometry.du(0,unitSpace) > 20:
+			split(u,unitSpace,0){ '0.5: Mixed_Bicycle | '0.5: Mixed_Bicycle }
+		case Mixed_Bicycle_Percentage > 0:
+			50% : split(u,unitSpace,0){ { 0.1: Cycle | ~rand(2,5): NIL | 0.1: Human  | ~rand(2,5): NIL }* }          # could be distributed better...
+			else: split(u,unitSpace,0){ { 0.1: Cycle | ~rand(0.5,5.5): NIL | 0.1: Human | ~rand(0.5,5.5): NIL }* }  # could be distributed better...
+		else:
+			NIL
+
+
+
+Cycle --> case (scope.sz < 2 && p(Mixed_Bicycle_Percentage*0.3))
+		|| (scope.sz >= 2 && p(Mixed_Bicycle_Percentage)):
+		alignScopeToAxes(y)
+		rotateScope(0,DirectionalRotation,0) 
+		t(0,0,'rand(0.1,0.6))
+		s(0,0,0) i(bikeAsset) r(scopeCenter,0,90,0)
+		#t(0,0,'rand(0.1,0.6))
+		#s(0,rand(1.7,1.9),0) r(0,dirHuman,0) 
+		#i(peopleAsset)
+		#deleteUV(_Texture_Switch)
+		else:
+			NIL
+
+
+		
 Human -->
 	case (scope.sz < 2 && p(People_Percentage*0.3)) 
 			|| (scope.sz >= 2 && p(People_Percentage)):
@@ -3328,7 +3365,7 @@ Fence(Location)-->
 						 #FencePoles
 
 FenceMesh -->
-	extrude(world.y,1.3)
+	extrude(world.y,1)
 	alignScopeToAxes(y) #Cast Scope to prevent edge issues 
 	alignScopeToGeometry(yUp, 0, 3)#Cast Scope to prevent edge issues. 
 	FencePrep
@@ -3343,6 +3380,11 @@ FenceTexture -->
 	texture(MiscFolder+"/Fence/wireTexture.png")
 	deleteUV(_Texture_Switch)
 	case Boulevard_Center_Type=="Gate Fence":
+	setupProjection(0, scope.xy, ~4, '1)
+	projectUV(0)
+	texture(MiscFolder+"/Fence/aluminumPerimeter.png")
+	deleteUV(_Texture_Switch)
+	case Buffer_Type=="Fence":
 	setupProjection(0, scope.xy, ~4, '1)
 	projectUV(0)
 	texture(MiscFolder+"/Fence/aluminumPerimeter.png")
