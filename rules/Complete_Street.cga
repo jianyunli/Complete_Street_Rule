@@ -561,8 +561,8 @@ const Default_Mix_Bus= case Transit_Lane=="Bus Lane":.01 else: .2
 #Tree.Generateed Rules		#
 #####################
 
+#import Tree : "/Complete_Street_Singapore/rules/Singapore_Plant_Loader.cga" # Taken from ESRI.lib and uses its assets. Keep this in mind when using rule. 
 import Tree : "/ESRI.lib/rules/Plants/Plant_Loader.cga" # Taken from ESRI.lib and uses its assets. Keep this in mind when using rule. 
-
 
 ###################################################
 # Initial attribute settings
