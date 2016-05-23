@@ -312,21 +312,21 @@ attr Sidewalk_Bike_Rack					=false
 @Order(1) @Range("none", "Both", "Right", "Left")@Description("Will create a covered walkway")
 attr Sidewalk_Covered_Walkway					="None"
 @Order(2) @Range("Flat", "Angled", "Gable")@Description("Determine the roof type")
-attr Sidewalk_Cover_Roof = "Flat"
+attr Sidewalk_Cover_Roof = "Angled"
 @Order(3) @Range(2,20)@Description("Determine the clear height under roof")
 attr Sidewalk_Cover_ClearHeight = 3
 @Order(4) @Range("Road Side","Building Side", "Both")@Description("Determine if supporting columns are present on both sides or one side of the path")
-attr Sidewalk_Cover_ColumnPlacement = "Both"
+attr Sidewalk_Cover_ColumnPlacement = "Building Side"
 @Order(5) @Range(0.05,0.5)@Description("Assuming a Square supporting column, specify length of one side of column")
 attr Sidewalk_Cover_ColumnSize = 0.1
 @Order(6) @Range(0.05,2)@Description("Specify the distance that the column will be offset inside the sidewalk")
 attr Sidewalk_Cover_ColumnOffset = 0.3
 @Order(7) @Range(0.5,10)@Description("Specify the distance between two columns")
-attr Sidewalk_Cover_ColumnSpacing = 2
+attr Sidewalk_Cover_ColumnSpacing = 3
 @Order(8) @Range(0.05,0.5)@Description("Specify thickness of roof cover")
 attr Sidewalk_Cover_Thickness = 0.1
 @Order(9) @Range(0,90)@Description("Specify angle of roof cover")
-attr Sidewalk_Cover_RoofAngle = 0
+attr Sidewalk_Cover_RoofAngle = 10
 
 
 @Group("POPULATION",80) @Range(0,300) @Order(1) 
@@ -2775,7 +2775,7 @@ comp(f) {top : Roof_Start | bottom : Sidewalk_Pavement ("Undercover")}
 Roof_Start --> 
 	case Sidewalk_Cover_Roof == "Angled" : roofShed(Sidewalk_Cover_RoofAngle) comp(f){ top : Roof_Slope | side : NIL }
 	case Sidewalk_Cover_Roof == "Gable" : roofGable(Sidewalk_Cover_RoofAngle) comp(f){ top : Roof_Slope | side : NIL }
-	else : extrude(Sidewalk_Cover_Thickness)
+	else : Roof_Slope
 	
 Roof_Slope	--> extrude(Sidewalk_Cover_Thickness) 
 comp(f){top : Roof_Material | side : Roof_Material | bottom : Column_Start}
@@ -2794,7 +2794,7 @@ Column_LengthSection --> case Sidewalk_Cover_ColumnPlacement == "Road Side" :
 
 ColumnBase --> reverseNormals extrude(world.y, -Sidewalk_Cover_ClearHeight*2)
 
-Roof_Material --> texture(Sidewalk_Texture) 
+Roof_Material -->  setupProjection(0,scope.xy,2, 2) texture(Sidewalk_Texture)  projectUV(0)
 
 ####################################################################################################
 
@@ -3066,18 +3066,18 @@ People -->
 	
 	
 Mixed_Bicycle --> 
-		case geometry.du(0,unitSpace) > 20:
+		case geometry.du(0,unitSpace) > 8:
 			split(u,unitSpace,0){ '0.5: Mixed_Bicycle | '0.5: Mixed_Bicycle }
 		case Mixed_Bicycle_Percentage > 0:
-			50% : split(u,unitSpace,0){ { 0.1: Cycle | ~rand(2,5): NIL | 0.1: Human  | ~rand(2,5): NIL }* }          # could be distributed better...
-			else: split(u,unitSpace,0){ { 0.1: Cycle | ~rand(0.5,5.5): NIL | 0.1: Human | ~rand(0.5,5.5): NIL }* }  # could be distributed better...
+			50% : split(u,unitSpace,0){ { 0.1: Cycle | ~rand(2,5): NIL | 0.1: RemainingHuman  | ~rand(2,5): NIL }* }          # could be distributed better...
+			else: split(u,unitSpace,0){ { 0.1: Cycle | ~rand(0.5,5.5): NIL | 0.1: RemainingHuman | ~rand(0.5,5.5): NIL }* }  # could be distributed better...
 		else:
 			NIL
 
 
 
-Cycle --> case (scope.sz < 2 && p(Mixed_Bicycle_Percentage*0.3))
-		|| (scope.sz >= 2 && p(Mixed_Bicycle_Percentage)):
+Cycle --> case (scope.sz < 2 && p(Mixed_Bicycle_Percentage*0.03))
+		|| (scope.sz >= 2 && p(Mixed_Bicycle_Percentage*0.01)):
 		alignScopeToAxes(y)
 		rotateScope(0,DirectionalRotation,0) 
 		t(0,0,'rand(0.1,0.6))
@@ -3094,6 +3094,18 @@ Cycle --> case (scope.sz < 2 && p(Mixed_Bicycle_Percentage*0.3))
 Human -->
 	case (scope.sz < 2 && p(People_Percentage*0.3)) 
 			|| (scope.sz >= 2 && p(People_Percentage)):
+		alignScopeToAxes(y)
+		t(0,0,'rand(0.1,0.6))
+		s(0,rand(1.7,1.9),0) r(0,dirHuman,0) 
+		i(peopleAsset)
+		color( _ModeClassifier ("Pedestrian"))
+		deleteUV(_Texture_Switch)
+	else:
+		NIL
+		
+RemainingHuman --> 
+	case (scope.sz < 2 && p((100 - Mixed_Bicycle_Percentage)*0.01)) 
+			|| (scope.sz >= 2 && p((100 - Mixed_Bicycle_Percentage)*0.01)):
 		alignScopeToAxes(y)
 		t(0,0,'rand(0.1,0.6))
 		s(0,rand(1.7,1.9),0) r(0,dirHuman,0) 
