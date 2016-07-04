@@ -1,0 +1,15 @@
+/**
+ * File:    instanceReporting.cga
+ * Created: 5 May 2016 07:16:12 GMT
+ * Author:  Tanvi
+ */
+
+version "2015.2"
+
+InstanceReport(asset) --> 
+report("asset", asset)
+s(0.0001,'1,0.0001) center(xz)
+report("xpos", convert(x, scope, world, pos, 0,0,0))
+report("ypos", convert(y, scope, world, pos, 0,0,0))
+report("zpos", convert(z, scope, world, pos, 0,0,0))
+Nil		

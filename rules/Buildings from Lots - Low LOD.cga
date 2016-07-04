@@ -1,0 +1,157 @@
+/**
+ * File:    Buildings from Lots.cga
+ * Created: 13 Apr 2016 06:56:35 GMT
+ * Author:  Tanvi
+ */
+
+version "2015.2"
+
+@Group("Footprint",1)  @Range(3,20)
+attr distanceStreet = rand(3,10)
+@Group("Footprint",1)  @Range(4,20)
+attr distanceBuildings = rand(4,10)
+
+@Group("Building",2) @Range(20,200)
+attr height = 
+	case geometry.area > 1000: rand(20,80) 
+	else: rand(8,20)
+
+@Group("Facade",3)  @Range(3,6)
+attr floorheight = rand(3,4.5)
+@Group("Facade",2) @Range("None", "Simple", "Realistic")
+attr textured = "None"
+@Group("Facade", 3) 
+attr massColor = "#ffffff"
+@Group("Facade", 3) 
+attr OpenSpaceColor = "#ffffff"
+@Group("Facade", 3) @File("jpg","JPG","tiff","png","PNG")
+attr FacadeTexture = "Buildings from Lots/facade_textures/Charcoal.png"
+@Group("Facade", 3) @File("jpg","JPG","tiff","png","PNG")
+attr OpenSpaceTexture = "Buildings from Lots/Pave_textures/Pave3.JPG"
+@Group("Facade", 3) @File("jpg","JPG","tiff","png","PNG")
+attr OpenSpaceNormal = "Buildings from Lots/Pave_textures/Norm3.JPG"
+#Attributes for Realistic Buildings
+
+@Group("Texture",4)@Range(1,17)
+attr TextureSeed = str(rint (rand(1,17)))
+@Group("Texture",4)@Range(1,11)
+attr PaveTexSeed = str(rint (rand(1,11)))
+@Group("Texture",4)@Range(1,5)
+attr GreenTexSeed = str(rint (rand(1,5)))
+@Group("Texture",4)@Range(0,1)
+attr WallRed = rand(0.9,1)
+@Group("Texture",4)@Range(0,1)
+attr WallGreen = rand(0.9,1)
+@Group("Texture",4)@Range(0,1)
+attr WallBlue = rand(0.9,1)
+@Group("Texture",4)@Range(0,1)
+attr WallOpacity = 1
+@Group("Texture",4)
+
+const flatRoofColor = 10%: .6  25%: .7  30%: .8  25%: .9 
+					  else: 1
+					  				
+const topTexture = "Buildings from Lots/new_facade/Tfac"+TextureSeed+".jpg"
+const midTexture = "Buildings from Lots/new_facade/fac"+TextureSeed+".jpg"
+const botTexture = "Buildings from Lots/new_facade/Bfac"+TextureSeed+".jpg"
+const topBump = "Buildings from Lots/new_facade/Tbump"+TextureSeed+".jpg"
+const midBump = "Buildings from Lots/new_facade/bump"+TextureSeed+".jpg"
+const botBump = "Buildings from Lots/new_facade/Bbump"+TextureSeed+".jpg"
+
+const randomRoofTexture = fileRandom("*/roof_textures/flatRoof*.jpg")
+const GreenTexture = fileRandom("*/Green_textures/Grass"+GreenTexSeed+"*")
+const GreenTextureNorm = fileRandom("*/Green_textures/Norm"+GreenTexSeed+"*")
+const PaveTexture = fileRandom("*/Pave_textures/Pave"+PaveTexSeed+"*")
+const PaveTextureNorm = fileRandom("*/Pave_textures/Norm"+PaveTexSeed+"*")
+const dirtmapTexture = fileRandom("*/dirtmap/dirtmap*.jpg")
+
+
+@StartRule	
+Lot --> 
+	setback(distanceStreet)
+		{ street.front: OpenSpace
+		| remainder: SubParcel }
+
+SubParcel -->
+	setback(distanceBuildings/2)
+		{ street.back : OpenSpace 
+		| street.side : OpenSpace 
+		| remainder: Footprint }		
+
+Footprint -->
+	 extrude(height) Mass
+	
+	
+//////////////////
+//   Facades    //	
+//////////////////
+
+actualFloorHeight =  
+	case scope.sy >= 1 : scope.sy/rint(scope.sy/floorheight)
+	else : scope.sy
+	
+actualTileWidth = 
+	case scope.sx >= 2 : scope.sx/rint(scope.sx/4)
+	else : scope.sx
+
+
+Mass --> 
+	 color(massColor) Building
+	
+OpenSpace --> color(OpenSpaceColor) 
+			  setupProjection(0, scope.xz, 5, 5)
+			  set(material.colormap,OpenSpaceTexture)
+			  set(material.normalmap,OpenSpaceNormal)
+			  projectUV(0)
+			  End
+
+
+Building --> case textured == "None" : End
+			 case textured == "Simple" : SimpleBuilding
+			 else : RealisticBuilding
+
+SimpleBuilding --> comp(f){front: Wall | side: Wall | top: Roof}
+
+Wall --> setupProjection(0, scope.xy, '1, '1)
+		 texture(FacadeTexture)
+		 projectUV(0)
+		 End
+		 
+Roof --> 20% : roofHip(20)
+		 20% : roofGable(20)
+		 else : End
+
+RealisticBuilding --> comp(f){front: RealisticWall | side: RealisticWall | top: RealisticRoof}
+
+RealisticWall --> split(y){actualFloorHeight : BuildingBot | ~1 : BuildingMid | actualFloorHeight : BuildingTop}
+	
+	
+BuildingBot -->	setupProjection(0, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				setupProjection(1, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				set(material.bumpmap,botBump)
+				set(material.colormap, botTexture)
+				color(WallRed, WallGreen, WallBlue, WallOpacity)
+				projectUV(0)
+				projectUV(1)	
+BuildingMid -->	setupProjection(0, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				setupProjection(1, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				set(material.bumpmap,midBump)
+				set(material.colormap, midTexture)
+				color(WallRed, WallGreen, WallBlue, WallOpacity)
+				projectUV(0)
+				projectUV(1)	
+BuildingTop -->	setupProjection(0, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				setupProjection(1, scope.xy, 8*actualTileWidth, 8*actualFloorHeight)
+				set(material.bumpmap,topBump)
+				set(material.colormap, topTexture)
+				color(WallRed, WallGreen, WallBlue, WallOpacity)
+				projectUV(0)
+				projectUV(1)
+				
+RealisticRoof --> alignScopeToGeometry(yUp, any, longest)
+		 		setupProjection(0,
+                scope.xz,
+				scope.sx,
+				scope.sz)
+				color(flatRoofColor,flatRoofColor,flatRoofColor)
+				set(material.colormap, randomRoofTexture)
