@@ -1,22 +1,36 @@
-# Complete_Street_Rule
+# What is the Complete Street Rule?
+Complete Streets is a robust procedural street example that incorporates knowledge and ideas from various sources of transportation planning knowledge including NACTO Design Guidelines, AASHTO Design Recommendations, and MUTCD standards. The goal of the rule is to represent a diversity of street configurations to support multimodal planning in urban areas, and provide some basis for before and after comparisons of street treatments and transportation investments in Esri CityEngine. Along with visualization, the street rule includes analytical reports on various aspects of the geometry of the street that can be used to inform rough cost estimates. In addition to these analytics, the street rule has various customizable thematics and reports that use information from the geometry and configuration of the street to suggest how it might impact the "stress levels" put on different modes. The street rule intends to represent transportation planning treatments for complete streets within urban areas and common highway configurations that might include shoulders, Jersey barriers, and HOV Lanes.
 This is an updated repository for a modified version of the ESRI Complete Street rule by the original rule author. 
 The rule uses the original assets folder of the ESRI Complete street rule, so in order to use it, you really only need the updated CGA file. 
 # Instructions
 To open and interact with this project, do the following:
 1.	Click Clone or Download > Download Zip above to download the project zip file to your computer.
+
 2.	Unzip the repository folder in a selected workspace.
+
 3.	Launch CityEngine.
-3.	Locate the unzipped project folder and click Open.
+
+4.	Locate the unzipped project folder and click Open.
+
 5.	Keep the default settings and click Finish.
+
 6.	Expand the imported project folder in Navigator window and click the scenes folder.
+
 7.	Double click the .cej file to open the scene in CityEngine.
+
 If all you need is the rule for your current project: 
 1.	Click Clone or Download > Download Zip above to download the project zip file to your computer.
+
 2.	Unzip the repository folder in a selected workspace.
+
 3.	Go into the directory and find the "rules" and "assets" folder. 
+
 4.	Move the Complete_Streets folder in assets to your current project's assets folder. 
+
 5.	Move the files ending in .CGA in the rules folder to your current project's rules's folder. 
+
 6.	Open CityEngine. 
+
 7.	Apply rule to desired street segments.
 
 ![alt tag](https://geonet.esri.com/servlet/JiveServlet/showImage/102-6915-27-160154/RoadDiet6.jpeg.jpg)
