@@ -1,7 +1,7 @@
 /**
  * File:    Complete Street.cga
  * Created: 10/30/2015 Oct 2015
- * Last Updated: 5/11/2016
+ * Last Updated: 4/7/2016
  * Author:  David J. Wasserman- As Part of and Based on Work from Esri Redlands
  * License: ESRI Attribution License and Apache License.
  * Source: https://github.com/Holisticnature/Complete_Street_Rule
@@ -2561,14 +2561,19 @@ Tree_Scatter-->
 # Sidewalk
 #
 
-Sidewalk--> BridgeSide
+Sidewalk--> case geometry.du(0,unitSpace) < 2 : MainSidewalk
+			else: split(u,unitSpace,0){_crosswalkGap : MainSidewalk | _crosswalkBeginWidth : LeftoverSidewalk | ~1 : EndSidewalk }
+
+EndSidewalk --> split(u,unitSpace,0) {~1 : MainSidewalk | _crosswalkBeginWidth : LeftoverSidewalk | _crosswalkGap : MainSidewalk}
+
+MainSidewalk --> BridgeSide
 	set(sidewalkWidth,scope.sz)
 	set(sidewalkLength,scope.sx)
 	color( _ModeClassifier ("Pedestrian"))#If Display Thematics==Usage, goes to usage, if not, Thematic. 
 	report("Cut/Fill.Total Sidewalk Cut/Fill Volume (m^3)", geometry.area()*Sidewalk_Height)
 	report("Mode Area (m^2).Pedestrian", geometry.area())
 	split(v,unitSpace,0){Curb_Depth: Curbs_Mass(false) 
-						| ~1: Sidewalk_Setup }
+						| ~1: Sidewalk_Setup } 
 
 Curbs_Mass(RotateUV)-->
 	extrude(world.y, Sidewalk_Height )
